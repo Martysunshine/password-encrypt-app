@@ -51,16 +51,31 @@ export function AuthScreen(): JSX.Element {
   return (
     <main className="center-screen">
       <div className="glass-card auth-card fade-in">
-        <h1 className="card-title">Zero Knowledge Vault</h1>
-        <p className="card-subtitle">Sign in to your account to access your encrypted vault.</p>
+        <div className="card-brand">
+          <div className="brand-icon">🔐</div>
+          <div>
+            <div className="brand-name">Zero Knowledge Vault</div>
+            <div className="brand-tagline">End-to-end encrypted · Argon2id · AES-256-GCM</div>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="card-title">{mode === "signin" ? "Welcome back" : "Create account"}</h1>
+          <p className="card-subtitle">
+            {mode === "signin"
+              ? "Sign in to access your encrypted vault."
+              : "Create your account. Your vault key is derived locally."}
+          </p>
+        </div>
 
         <form className="stack" onSubmit={handleSubmit}>
           <label className="field">
-            <span>Email</span>
+            <span>Email address</span>
             <input
               autoComplete="email"
               required
               type="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
@@ -72,6 +87,7 @@ export function AuthScreen(): JSX.Element {
               autoComplete={mode === "signin" ? "current-password" : "new-password"}
               required
               type="password"
+              placeholder={mode === "signup" ? "Min. 12 characters" : ""}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
             />
@@ -84,6 +100,7 @@ export function AuthScreen(): JSX.Element {
                 autoComplete="new-password"
                 required
                 type="password"
+                placeholder="Repeat your password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
@@ -93,7 +110,7 @@ export function AuthScreen(): JSX.Element {
           {error !== null ? <p className="error-text">{error}</p> : null}
 
           <button className="primary-button" disabled={loading} type="submit">
-            {loading ? "Working..." : actionLabel}
+            {loading ? "Working…" : actionLabel}
           </button>
         </form>
 
@@ -106,7 +123,7 @@ export function AuthScreen(): JSX.Element {
             }}
             type="button"
           >
-            {mode === "signin" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+            {mode === "signin" ? "No account? Sign up →" : "Already have an account? Sign in"}
           </button>
         </div>
       </div>

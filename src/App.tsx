@@ -11,7 +11,7 @@ export default function App(): JSX.Element {
   if (isLoading || isProfileLoading) {
     return (
       <main className="center-screen">
-        <div className="glass-card loading-card">Loading secure session...</div>
+        <div className="glass-card loading-card">Initialising secure session</div>
       </main>
     );
   }

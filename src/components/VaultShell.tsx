@@ -190,28 +190,33 @@ export function VaultShell(): JSX.Element {
   return (
     <main className="vault-shell fade-in">
       <header className="top-bar">
-        <div>
-          <h1>Zero Knowledge Vault</h1>
-          <p>Client-side encryption with Argon2id + AES-256-GCM</p>
+        <div className="top-bar-brand">
+          <div className="top-bar-icon">🔐</div>
+          <div>
+            <h1>Zero Knowledge Vault</h1>
+            <p>Argon2id · AES-256-GCM · Client-side encryption</p>
+          </div>
         </div>
-        <button className="primary-button" onClick={openNewItemEditor} type="button">
-          New item
-        </button>
+        <div className="top-bar-actions">
+          <button className="primary-button" onClick={openNewItemEditor} type="button">
+            + New item
+          </button>
+        </div>
       </header>
 
       {error !== null ? <p className="error-banner">{error}</p> : null}
 
       <section className="vault-grid">
         <aside className="panel list-panel">
-          <label className="field search-field">
-            <span>Search vault</span>
+          <div className="search-wrapper">
             <input
-              placeholder="Title, domain, folder, tags"
+              className="search-field"
+              placeholder="Search by title, domain, folder…"
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
             />
-          </label>
+          </div>
 
           <div className="list-container">
             {loading ? <p className="muted-text">Loading vault...</p> : null}
@@ -221,16 +226,17 @@ export function VaultShell(): JSX.Element {
               <button
                 key={item.id}
                 className={`list-item ${selectedItem?.id === item.id ? "active" : ""}`}
-                onClick={() => {
-                  void handleSelectItem(item.id);
-                }}
+                onClick={() => { void handleSelectItem(item.id); }}
                 type="button"
               >
-                <div>
-                  <strong>{item.title}</strong>
-                  <span>{item.url || item.folder || "No domain"}</span>
+                <div className="item-avatar">
+                  {item.title.slice(0, 2)}
                 </div>
-                {item.favorite ? <span>★</span> : null}
+                <div className="item-body">
+                  <div className="item-title">{item.title}</div>
+                  <div className="item-sub">{item.url || item.folder || "No domain"}</div>
+                </div>
+                {item.favorite ? <span className="item-star">★</span> : null}
               </button>
             ))}
           </div>
@@ -270,13 +276,14 @@ export function VaultShell(): JSX.Element {
         <section className="panel detail-panel">
           {selectedItem === null ? (
             <div className="empty-detail">
-              <h2>Select a vault item</h2>
-              <p>Metadata is visible. Secrets decrypt only after unlock and only in memory.</p>
+              <div className="empty-detail-icon">🔒</div>
+              <h2>Select an item</h2>
+              <p>Secrets are decrypted on demand and never stored outside memory.</p>
             </div>
           ) : (
             <div className="detail-content">
               <div className="detail-header">
-                <div>
+                <div className="detail-header-text">
                   <h2>{selectedItem.title}</h2>
                   <p>{selectedItem.url || "No URL"}</p>
                 </div>
@@ -297,11 +304,11 @@ export function VaultShell(): JSX.Element {
                     <input readOnly type="text" value={selectedItem.secret.username} />
                   </label>
                   <button
-                    className="subtle-button"
+                    className="subtle-button copy-btn"
                     type="button"
                     onClick={() => copyWithAutoClear(selectedItem.secret.username, "username")}
                   >
-                    {copiedField === "username" ? "Copied!" : "Copy"}
+                    {copiedField === "username" ? "✓ Copied" : "Copy"}
                   </button>
                 </div>
 
@@ -315,11 +322,11 @@ export function VaultShell(): JSX.Element {
                     />
                   </label>
                   <button
-                    className="subtle-button"
+                    className="subtle-button copy-btn"
                     type="button"
                     onClick={() => copyWithAutoClear(selectedItem.secret.password, "password")}
                   >
-                    {copiedField === "password" ? "Copied!" : "Copy"}
+                    {copiedField === "password" ? "✓ Copied" : "Copy"}
                   </button>
                 </div>
               </div>
@@ -337,7 +344,13 @@ export function VaultShell(): JSX.Element {
                 <textarea readOnly rows={8} value={selectedItem.secret.notes} />
               </label>
 
-              {selectedItem.tags.length > 0 ? <p className="tag-row">{selectedItem.tags.map((tag) => `#${tag}`).join(" ")}</p> : null}
+              {selectedItem.tags.length > 0 ? (
+                <div className="tag-row">
+                  {selectedItem.tags.map((tag) => (
+                    <span key={tag} className="tag-chip">#{tag}</span>
+                  ))}
+                </div>
+              ) : null}
             </div>
           )}
         </section>
@@ -345,11 +358,11 @@ export function VaultShell(): JSX.Element {
 
       {editorState !== null ? (
         <div className="modal-overlay" role="presentation">
-          <div className="panel modal-card">
-            <div className="detail-header">
+        <div className="panel modal-card">
+            <div className="modal-header">
               <h2>{editorState.id === null ? "New vault item" : "Edit vault item"}</h2>
               <button className="subtle-button" onClick={closeEditor} type="button">
-                Close
+                ✕ Close
               </button>
             </div>
 

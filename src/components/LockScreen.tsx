@@ -76,10 +76,19 @@ export function LockScreen(): JSX.Element {
 
   return (
     <main className="center-screen">
-      <div className="backdrop-blur" />
       <div className="glass-card lock-card slide-up">
-        <h1 className="card-title">{title}</h1>
-        <p className="card-subtitle">{subtitle}</p>
+        <div className="card-brand">
+          <div className="brand-icon">{isSetupMode ? "🔑" : "🔒"}</div>
+          <div>
+            <div className="brand-name">Zero Knowledge Vault</div>
+            <div className="brand-tagline">All decryption happens locally in your browser</div>
+          </div>
+        </div>
+
+        <div>
+          <h1 className="card-title">{title}</h1>
+          <p className="card-subtitle">{subtitle}</p>
+        </div>
 
         <form className="stack" onSubmit={handleSubmit}>
           <label className="field">
@@ -88,6 +97,7 @@ export function LockScreen(): JSX.Element {
               autoComplete={isSetupMode ? "new-password" : "current-password"}
               required
               type="password"
+              placeholder={isSetupMode ? "Min. 12 characters" : "Enter master password"}
               value={masterPassword}
               onChange={(event) => setMasterPassword(event.target.value)}
             />
@@ -100,6 +110,7 @@ export function LockScreen(): JSX.Element {
                 autoComplete="new-password"
                 required
                 type="password"
+                placeholder="Repeat master password"
                 value={confirmPassword}
                 onChange={(event) => setConfirmPassword(event.target.value)}
               />
@@ -107,29 +118,29 @@ export function LockScreen(): JSX.Element {
           ) : null}
 
           {!isSetupMode && failedAttempts > 0 ? (
-            <p className="muted-text">Failed attempts: {failedAttempts}</p>
+            <p className="muted-text">⚠ Failed attempts: {failedAttempts} / 5</p>
           ) : null}
 
           {!isSetupMode && remainingLockoutMs > 0 ? (
-            <p className="warning-text">Vault locked for {lockoutSeconds}s</p>
+            <p className="warning-text">🔒 Vault locked — try again in {lockoutSeconds}s</p>
           ) : null}
 
           {error !== null ? <p className="error-text">{error}</p> : null}
 
           <button className="primary-button" disabled={loading} type="submit">
-            {loading ? "Working..." : isSetupMode ? "Create vault key" : "Unlock"}
+            {loading ? "Deriving key…" : isSetupMode ? "Create vault key" : "Unlock vault"}
           </button>
         </form>
 
-        <button
-          className="subtle-button"
-          onClick={() => {
-            void signOut();
-          }}
-          type="button"
-        >
-          Switch account
-        </button>
+        <div className="auth-toggle-row">
+          <button
+            className="subtle-button"
+            onClick={() => { void signOut(); }}
+            type="button"
+          >
+            ← Switch account
+          </button>
+        </div>
       </div>
     </main>
   );
