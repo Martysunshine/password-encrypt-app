@@ -1,5 +1,6 @@
 import { FormEvent, useMemo, useState } from "react";
 
+import lockClosedImage from "../assets/lock-closed.jpg";
 import { useAuth } from "../hooks/useAuth";
 import { useUnlock } from "../hooks/useUnlock";
 
@@ -19,6 +20,8 @@ export function LockScreen(): JSX.Element {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showMasterPassword, setShowMasterPassword] = useState(false);
+  const [showConfirmMasterPassword, setShowConfirmMasterPassword] = useState(false);
 
   const lockoutSeconds = Math.ceil(remainingLockoutMs / 1_000);
 
@@ -75,72 +78,101 @@ export function LockScreen(): JSX.Element {
   };
 
   return (
-    <main className="center-screen">
-      <div className="glass-card lock-card slide-up">
-        <div className="card-brand">
-          <div className="brand-icon">{isSetupMode ? "🔑" : "🔒"}</div>
-          <div>
-            <div className="brand-name">Zero Knowledge Vault</div>
-            <div className="brand-tagline">All decryption happens locally in your browser</div>
+    <main className="center-screen entry-screen lock-screen">
+      <div className="glass-card entry-card slide-up">
+        <section className="entry-form-section">
+          <div className="entry-heading">
+            <p className="hero-kicker">{isSetupMode ? "Initial setup" : "Secure unlock"}</p>
+            <h2 className="card-title">{title}</h2>
+            <p className="card-subtitle">{subtitle}</p>
           </div>
-        </div>
 
-        <div>
-          <h1 className="card-title">{title}</h1>
-          <p className="card-subtitle">{subtitle}</p>
-        </div>
+          <form className="stack" onSubmit={handleSubmit}>
+            <div className="field">
+              <span>Master password</span>
+              <div className="input-reveal-group">
+                <input
+                  autoComplete={isSetupMode ? "new-password" : "current-password"}
+                  required
+                  type={showMasterPassword ? "text" : "password"}
+                  placeholder={isSetupMode ? "Minimum 12 characters" : "Enter master password"}
+                  value={masterPassword}
+                  onChange={(event) => setMasterPassword(event.target.value)}
+                />
+                <button
+                  className="reveal-toggle"
+                  type="button"
+                  title={showMasterPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowMasterPassword((value) => !value)}
+                >
+                  {showMasterPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
 
-        <form className="stack" onSubmit={handleSubmit}>
-          <label className="field">
-            <span>Master password</span>
-            <input
-              autoComplete={isSetupMode ? "new-password" : "current-password"}
-              required
-              type="password"
-              placeholder={isSetupMode ? "Min. 12 characters" : "Enter master password"}
-              value={masterPassword}
-              onChange={(event) => setMasterPassword(event.target.value)}
-            />
-          </label>
+            {isSetupMode ? (
+              <div className="field">
+                <span>Confirm master password</span>
+                <div className="input-reveal-group">
+                  <input
+                    autoComplete="new-password"
+                    required
+                    type={showConfirmMasterPassword ? "text" : "password"}
+                    placeholder="Repeat master password"
+                    value={confirmPassword}
+                    onChange={(event) => setConfirmPassword(event.target.value)}
+                  />
+                  <button
+                    className="reveal-toggle"
+                    type="button"
+                    title={showConfirmMasterPassword ? "Hide password" : "Show password"}
+                    onClick={() => setShowConfirmMasterPassword((value) => !value)}
+                  >
+                    {showConfirmMasterPassword ? "Hide" : "Show"}
+                  </button>
+                </div>
+              </div>
+            ) : null}
 
-          {isSetupMode ? (
-            <label className="field">
-              <span>Confirm master password</span>
-              <input
-                autoComplete="new-password"
-                required
-                type="password"
-                placeholder="Repeat master password"
-                value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
-              />
-            </label>
-          ) : null}
+            {!isSetupMode && failedAttempts > 0 ? (
+              <p className="muted-text">Failed attempts: {failedAttempts} of 5</p>
+            ) : null}
 
-          {!isSetupMode && failedAttempts > 0 ? (
-            <p className="muted-text">⚠ Failed attempts: {failedAttempts} / 5</p>
-          ) : null}
+            {!isSetupMode && remainingLockoutMs > 0 ? (
+              <p className="warning-text">Vault temporarily locked. Try again in {lockoutSeconds}s.</p>
+            ) : null}
 
-          {!isSetupMode && remainingLockoutMs > 0 ? (
-            <p className="warning-text">🔒 Vault locked — try again in {lockoutSeconds}s</p>
-          ) : null}
+            {error !== null ? <p className="error-text">{error}</p> : null}
 
-          {error !== null ? <p className="error-text">{error}</p> : null}
+            <button className="primary-button" disabled={loading} type="submit">
+              {loading ? "Deriving key..." : isSetupMode ? "Create vault key" : "Unlock vault"}
+            </button>
+          </form>
 
-          <button className="primary-button" disabled={loading} type="submit">
-            {loading ? "Deriving key…" : isSetupMode ? "Create vault key" : "Unlock vault"}
-          </button>
-        </form>
+          <p className="inline-hint">
+            {isSetupMode
+              ? "This password cannot be recovered. Store it in a safe place."
+              : "Lockout protection activates after repeated failed unlock attempts."}
+          </p>
 
-        <div className="auth-toggle-row">
-          <button
-            className="subtle-button"
-            onClick={() => { void signOut(); }}
-            type="button"
-          >
-            ← Switch account
-          </button>
-        </div>
+          <div className="auth-toggle-row">
+            <button
+              className="subtle-button"
+              onClick={() => { void signOut(); }}
+              type="button"
+            >
+              Switch account
+            </button>
+          </div>
+        </section>
+
+        <section className="entry-image-panel" aria-label="Vault state image">
+          <img
+            className="entry-lock-image"
+            src={lockClosedImage}
+            alt="Closed lock showing the vault is locked"
+          />
+        </section>
       </div>
     </main>
   );
