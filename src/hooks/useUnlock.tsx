@@ -35,6 +35,26 @@ const DEFAULT_AUTO_LOCK_MINUTES = 5;
 const MIN_AUTO_LOCK_MINUTES = 1;
 const MAX_AUTO_LOCK_MINUTES = 60;
 
+function validateKdfParams(params: KdfParams): void {
+  if (
+    typeof params.memoryCost !== "number" ||
+    params.memoryCost < 8_192 ||
+    params.memoryCost > 524_288
+  ) {
+    throw new Error("KDF memory cost is out of the allowed range.");
+  }
+  if (
+    typeof params.timeCost !== "number" ||
+    params.timeCost < 1 ||
+    params.timeCost > 10
+  ) {
+    throw new Error("KDF time cost is out of the allowed range.");
+  }
+  if (params.hashLength !== 64) {
+    throw new Error("KDF hash length must be 64.");
+  }
+}
+
 interface UnlockContextValue {
   profile: ProfileRow | null;
   isProfileLoading: boolean;
@@ -281,6 +301,7 @@ export function UnlockProvider({ children }: PropsWithChildren): JSX.Element {
       }
 
       const salt = parseSalt(profile.kdf_salt);
+      validateKdfParams(profile.kdf_params);
       const { encryptionKey, verifierKey } = await deriveMasterKeys(
         masterPassword,
         salt,

@@ -6,6 +6,7 @@ import { useUnlock } from "../hooks/useUnlock";
 import { useVault } from "../hooks/useVault";
 import { generateSecurePassword } from "../lib/passwordGenerator";
 import type { VaultItemInput } from "../lib/types";
+import { isSafeUrl, MAX_FIELD_LENGTHS } from "../lib/vaultRecord";
 import { LockStateIcon } from "./LockStateIcon";
 
 interface VaultEditorState {
@@ -173,6 +174,21 @@ export function VaultShell(): JSX.Element {
 
     if (payload.title.length === 0) {
       setError("Item title is required.");
+      return;
+    }
+
+    if (payload.title.length > MAX_FIELD_LENGTHS.title) {
+      setError(`Title must be ${MAX_FIELD_LENGTHS.title.toString()} characters or fewer.`);
+      return;
+    }
+
+    if (payload.url.length > 0 && !isSafeUrl(payload.url)) {
+      setError("URL must use http:// or https:// — other schemes are not allowed.");
+      return;
+    }
+
+    if (payload.url.length > MAX_FIELD_LENGTHS.url) {
+      setError(`URL must be ${MAX_FIELD_LENGTHS.url.toString()} characters or fewer.`);
       return;
     }
 
@@ -461,6 +477,7 @@ export function VaultShell(): JSX.Element {
                 <span>Title</span>
                 <input
                   required
+                  maxLength={MAX_FIELD_LENGTHS.title}
                   type="text"
                   value={editorState.title}
                   onChange={(event) => setEditorState({ ...editorState, title: event.target.value })}
@@ -472,6 +489,7 @@ export function VaultShell(): JSX.Element {
                   <span>URL</span>
                   <input
                     type="url"
+                    maxLength={MAX_FIELD_LENGTHS.url}
                     value={editorState.url}
                     onChange={(event) => setEditorState({ ...editorState, url: event.target.value })}
                   />
@@ -481,6 +499,7 @@ export function VaultShell(): JSX.Element {
                   <span>Folder</span>
                   <input
                     type="text"
+                    maxLength={MAX_FIELD_LENGTHS.folder}
                     value={editorState.folder}
                     onChange={(event) => setEditorState({ ...editorState, folder: event.target.value })}
                   />
@@ -491,6 +510,7 @@ export function VaultShell(): JSX.Element {
                 <span>Tags (comma-separated)</span>
                 <input
                   type="text"
+                  maxLength={MAX_FIELD_LENGTHS.tags}
                   value={editorState.tags}
                   onChange={(event) => setEditorState({ ...editorState, tags: event.target.value })}
                 />
@@ -504,6 +524,7 @@ export function VaultShell(): JSX.Element {
                 <span>Username</span>
                 <input
                   type="text"
+                  maxLength={MAX_FIELD_LENGTHS.username}
                   value={editorState.username}
                   onChange={(event) => setEditorState({ ...editorState, username: event.target.value })}
                 />
@@ -562,6 +583,7 @@ export function VaultShell(): JSX.Element {
                 <span>Notes</span>
                 <textarea
                   rows={6}
+                  maxLength={MAX_FIELD_LENGTHS.notes}
                   value={editorState.notes}
                   onChange={(event) => setEditorState({ ...editorState, notes: event.target.value })}
                 />

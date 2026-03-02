@@ -15,7 +15,12 @@ export function bytesToBase64(input: Uint8Array): string {
 
 export function base64ToBytes(input: string): Uint8Array {
   ensureBase64Functions();
-  const binary = atob(input);
+  let binary: string;
+  try {
+    binary = atob(input);
+  } catch {
+    throw new Error("Invalid base64 encoding.");
+  }
   const output = new Uint8Array(binary.length);
   for (let index = 0; index < binary.length; index += 1) {
     output[index] = binary.charCodeAt(index);

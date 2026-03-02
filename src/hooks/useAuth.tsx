@@ -10,6 +10,29 @@ import type { Session, User } from "@supabase/supabase-js";
 
 import { supabase } from "../lib/supabase";
 
+function sanitizeAuthError(error: { message?: string; status?: number }): Error {
+  const msg = error.message ?? "";
+  if (/invalid login credentials/i.test(msg) || /invalid password/i.test(msg)) {
+    return new Error("Invalid credentials. Please check your email and password.");
+  }
+  if (/email not confirmed/i.test(msg)) {
+    return new Error("Please confirm your email address before signing in.");
+  }
+  if (/user already registered/i.test(msg) || /already been registered/i.test(msg)) {
+    return new Error("An account with this email already exists.");
+  }
+  if (/rate limit/i.test(msg) || /too many requests/i.test(msg) || error.status === 429) {
+    return new Error("Too many attempts. Please wait a moment and try again.");
+  }
+  if (/password should be/i.test(msg) || /password must be/i.test(msg)) {
+    return new Error("Password does not meet the minimum requirements.");
+  }
+  if (/invalid email/i.test(msg)) {
+    return new Error("Please enter a valid email address.");
+  }
+  return new Error("Something went wrong. Please try again.");
+}
+
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
@@ -70,21 +93,21 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
   const signUp = async (email: string, password: string): Promise<void> => {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error !== null) {
-      throw new Error(error.message);
+      throw sanitizeAuthError(error);
     }
   };
 
   const signIn = async (email: string, password: string): Promise<void> => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error !== null) {
-      throw new Error(error.message);
+      throw sanitizeAuthError(error);
     }
   };
 
   const signOut = async (): Promise<void> => {
     const { error } = await supabase.auth.signOut();
     if (error !== null) {
-      throw new Error(error.message);
+      throw sanitizeAuthError(error);
     }
   };
 

@@ -1,6 +1,31 @@
 import type { EncryptedVaultSecret } from "./crypto/vaultCrypto";
 import type { VaultItemInput } from "./types";
 
+export const MAX_FIELD_LENGTHS = {
+  title: 200,
+  url: 2048,
+  folder: 100,
+  tags: 500,
+  username: 200,
+  password: 1000,
+  notes: 10_000,
+} as const;
+
+/**
+ * Returns true if the URL is empty (optional field) or uses http/https scheme only.
+ * Rejects javascript:, data:, and other potentially unsafe schemes.
+ */
+export function isSafeUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return true;
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === "https:" || parsed.protocol === "http:";
+  } catch {
+    return false;
+  }
+}
+
 function normalizeText(value: string): string | null {
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
